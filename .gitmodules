@@ -1,0 +1,9 @@
+[submodule "third_party/Catch2"]
+	path = third_party/Catch2
+	url = https://github.com/catchorg/Catch2
+[submodule "third_party/range-v3"]
+	path = third_party/range-v3
+	url = https://github.com/ericniebler/range-v3
+[submodule "third_party/gsl"]
+	path = third_party/gsl
+	url = https://github.com/Microsoft/GSL
