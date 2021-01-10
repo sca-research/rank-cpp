@@ -13,10 +13,7 @@
 namespace rankcpp {
 
 inline void hexToBytes(const std::string &s, gsl::span<std::uint8_t> bytes) {
-  // TODOcpp20: gsl::span::size returns a ptrdiff_t, rather than a size_t,
-  // so we have to cast here
-  using SizeType = std::string::size_type;
-  if (((s.size() + 1) / 2) > static_cast<SizeType>(bytes.size())) {
+  if (((s.size() + 1) / 2) > bytes.size()) {
     throw std::length_error("output span is too small");
   }
 

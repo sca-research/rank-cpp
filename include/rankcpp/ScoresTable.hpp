@@ -29,46 +29,46 @@ public:
   static constexpr T const epsilon = static_cast<T>(0.000001);
 
   explicit ScoresTable(DimensionsType dims)
-      : dims(dims), scores(dims.scoresCount()) {}
+      : dims_(dims), scores_(dims.scoresCount()) {}
 
   ScoresTable(DimensionsType dims, std::vector<T> scores)
-      : dims(std::move(dims)), scores(std::move(scores)) {}
+      : dims_(std::move(dims)), scores_(std::move(scores)) {}
 
   ScoresTable(DimensionsType dims, std::initializer_list<T> const &list)
-      : dims(dims), scores(dims.scoresCount()) {
+      : dims_(dims), scores_(dims.scoresCount()) {
     if (list.size() != dims.scoresCount()) {
       throw std::length_error("initializer_list needs to be of length " +
                               std::to_string(dims.scoresCount()) +
                               " bytes but is " + std::to_string(list.size()) +
                               " bytes");
     }
-    std::copy(std::cbegin(list), std::cend(list), std::begin(scores));
+    std::copy(std::cbegin(list), std::cend(list), std::begin(scores_));
   }
 
   auto score(std::size_t vectorIndex, std::size_t subkeyIndex) -> T & {
-    return scores.at(dims.scoresBeforeCount(vectorIndex) + subkeyIndex);
+    return scores_.at(dims_.scoresBeforeCount(vectorIndex) + subkeyIndex);
   }
 
   auto score(std::size_t vectorIndex, std::size_t subkeyIndex) const -> T {
-    return scores.at(dims.scoresBeforeCount(vectorIndex) + subkeyIndex);
+    return scores_.at(dims_.scoresBeforeCount(vectorIndex) + subkeyIndex);
   }
 
   auto operator()(std::size_t vectorIndex, std::size_t subkeyIndex) -> T & {
-    return scores[dims.scoresBeforeCount(vectorIndex) + subkeyIndex];
+    return scores_[dims_.scoresBeforeCount(vectorIndex) + subkeyIndex];
   }
 
   auto operator()(std::size_t vectorIndex, std::size_t subkeyIndex) const -> T {
-    return scores[dims.scoresBeforeCount(vectorIndex) + subkeyIndex];
+    return scores_[dims_.scoresBeforeCount(vectorIndex) + subkeyIndex];
   }
 
-  auto dimensions() const -> DimensionsType const & { return dims; }
+  auto dimensions() const -> DimensionsType const & { return dims_; }
 
   void normaliseVectors() {
-    for (std::size_t vectorIndex : dims.vectorRange()) {
-      auto first = std::begin(scores);
-      std::advance(first, dims.scoresBeforeCount(vectorIndex));
+    for (std::size_t vectorIndex : dims_.vectorRange()) {
+      auto first = std::begin(scores_);
+      std::advance(first, dims_.scoresBeforeCount(vectorIndex));
       auto last = first;
-      std::advance(last, dims.subkeyCount(vectorIndex));
+      std::advance(last, dims_.subkeyCount(vectorIndex));
       auto const sum = kahanSum(first, last);
       auto const constant = T{1.0} / sum;
 
@@ -79,14 +79,14 @@ public:
   }
 
   void abs() {
-    std::transform(std::cbegin(scores), std::cend(scores), std::begin(scores),
+    std::transform(std::cbegin(scores_), std::cend(scores_), std::begin(scores_),
                    [](auto const &score) { return std::fabs(score); });
   }
 
   void log2() { log(2.0); }
 
   void log(T base) {
-    std::transform(std::cbegin(scores), std::cend(scores), std::begin(scores),
+    std::transform(std::cbegin(scores_), std::cend(scores_), std::begin(scores_),
                    [&base](auto const &score) {
                      return std::log(score) / std::log(base);
                    });
@@ -95,7 +95,7 @@ public:
   void translateVectorsToPositive() {
     // find the minimum value
     auto const minValue =
-        *std::min_element(std::cbegin(scores), std::cend(scores));
+        *std::min_element(std::cbegin(scores_), std::cend(scores_));
 
     // if the minimum value is 0.0 then the vector elements are already all
     // positive and we don't need to do anything
@@ -103,7 +103,7 @@ public:
       // if we need to shift the scores, then add a small epsilon as a
       // fudge to ensure that no score is 0.0 after translation
       std::transform(
-          std::cbegin(scores), std::cend(scores), std::begin(scores),
+          std::cbegin(scores_), std::cend(scores_), std::begin(scores_),
           [&minValue](T const &score) { return (score - minValue) + epsilon; });
     }
   }
@@ -116,7 +116,7 @@ public:
                   "in the ScoresTable");
     // have to check that the supplied subkey definition matches one
     // specified by the dimensions of the table
-    auto const &subkeys = dims.asSpans();
+    auto const &subkeys = dims_.asSpans();
     auto found = std::find(std::cbegin(subkeys), std::cend(subkeys), subkey);
     if (found == std::cend(subkeys)) {
       throw std::invalid_argument(
@@ -134,30 +134,30 @@ public:
     // copy in scores
     auto const vectorIndex = found - std::cbegin(subkeys);
     auto const offset =
-        dims.scoresBeforeCount(static_cast<std::size_t>(vectorIndex));
-    auto end = std::begin(scores);
+        dims_.scoresBeforeCount(static_cast<std::size_t>(vectorIndex));
+    auto end = std::begin(scores_);
     std::advance(first, offset);
     std::copy(first, last, end);
   }
 
   // TODO enable if here
   auto mergeVectors() const -> ScoresTable<T, Dimensions> {
-    if (!dims.isEqualWidth()) {
+    if (!dims_.isEqualWidth()) {
       throw std::invalid_argument(
           "all distinguishing vectors must be of equal width to merge");
     }
-    auto const vectorCount = dims.vectorCount();
+    auto const vectorCount = dims_.vectorCount();
     if (vectorCount % 2 != 0) {
       throw std::invalid_argument(
           "can only merge an even number of distinguishing vectors");
     }
-    auto const vectorWidthBits = dims.vectorWidthBits(0);
+    auto const vectorWidthBits = dims_.vectorWidthBits(0);
     Dimensions const mergedDims(vectorCount / 2, vectorWidthBits * 2);
     std::size_t const mask = (std::size_t{1} << vectorWidthBits) - 1;
 
     ScoresTable<T, Dimensions> merged(mergedDims);
 
-    for (std::size_t vecIndex : dims.vectorRange() | ranges::views::drop(1) |
+    for (std::size_t vecIndex : dims_.vectorRange() | ranges::views::drop(1) |
                                     ranges::views::stride(2)) {
       std::size_t newVecIndex = (vecIndex - 1) / 2;
       auto const rearVecIndex = vecIndex - 1;
@@ -175,13 +175,13 @@ public:
     return merged;
   }
 
-  auto allScores() -> std::vector<T> & { return scores; }
+  auto allScores() -> std::vector<T> & { return scores_; }
 
-  auto allScores() const -> std::vector<T> const & { return scores; }
+  auto allScores() const -> std::vector<T> const & { return scores_; }
 
 private:
-  DimensionsType const dims;
-  std::vector<T> scores;
+  DimensionsType const dims_;
+  std::vector<T> scores_;
 };
 
 } /* namespace rankcpp */

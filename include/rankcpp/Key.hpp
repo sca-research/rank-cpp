@@ -75,7 +75,7 @@ public:
       std::uint32_t const byteIndex = bit / 8;
       std::uint32_t const bitOffset = bit % 8;
       std::uint32_t const bitValue =
-          (bytes[byteIndex] & (1 << bitOffset)) >> bitOffset;
+          (bytes[byteIndex] & (1U << bitOffset)) >> bitOffset;
       auto const stateBitIndex = bit - subkey.start();
       value |= (static_cast<IntType>(bitValue) << stateBitIndex);
     }
