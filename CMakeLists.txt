@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.9...3.18)
+cmake_minimum_required (VERSION 3.14...3.18)
 
 # Workaround to allow us to support the new VERSION syntax introduced > 3.12
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -10,6 +10,8 @@ project (rankcpp VERSION 1.0
                  LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+include(FetchContent)
 
 # common cmake
 include(cmake/StdProjectSettings.cmake)
@@ -47,16 +49,20 @@ target_include_directories(rankcpp INTERFACE "${PROJECT_SOURCE_DIR}/include/")
 target_compile_features(rankcpp INTERFACE cxx_std_17)
 
 # GSL (Microsoft guidelines support library)
-set (GSL_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/third_party/gsl/include/")
-add_library(GSL IMPORTED INTERFACE)
-set_property(TARGET GSL
-    PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${GSL_INCLUDE_DIR}")
+FetchContent_Declare(
+  GSL
+  GIT_REPOSITORY https://github.com/microsoft/gsl.git
+  GIT_TAG        v3.1.0
+)
+FetchContent_MakeAvailable(GSL)
 
 # range-v3
-set (RANGEV3_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/third_party/range-v3/include/")
-add_library(RangeV3 IMPORTED INTERFACE)
-set_property(TARGET RangeV3
-    PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${RANGEV3_INCLUDE_DIR}")
+FetchContent_Declare(
+  range-v3
+  GIT_REPOSITORY https://github.com/ericniebler/range-v3.git
+  GIT_TAG        e7746b214f3cfca341a8aa55fbce95b6b8a1c9d1
+)
+FetchContent_MakeAvailable(range-v3)
 
 # Test binaries
 add_subdirectory("test")
