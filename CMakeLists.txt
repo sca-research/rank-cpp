@@ -9,6 +9,8 @@ project (rankcpp VERSION 1.0
                  DESCRIPTION "side-channel key rank and enumeration routines"
                  LANGUAGES CXX)
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 # common cmake
 include(cmake/StdProjectSettings.cmake)
 
@@ -36,7 +38,10 @@ set_project_warnings(project_warnings)
 include(cmake/Doxygen.cmake)
 enable_doxygen()
 
-# Main baikal library (header-only)
+# enable Sphinx
+include(cmake/FindSphinx.cmake)
+
+# Main rank-cpp library (header-only)
 add_library(rankcpp INTERFACE)
 target_include_directories(rankcpp INTERFACE "${PROJECT_SOURCE_DIR}/include/")
 target_compile_features(rankcpp INTERFACE cxx_std_17)
@@ -55,3 +60,8 @@ set_property(TARGET RangeV3
 
 # Test binaries
 add_subdirectory("test")
+
+# Documentation
+if(ENABLE_DOC)
+  add_subdirectory ("doc")
+endif()
