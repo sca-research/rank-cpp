@@ -39,8 +39,7 @@ auto rank(WeightType maxWeight,
                                ranges::views::reverse;
         auto const prevRange =
             ranges::views::iota(weight, maxWeight) | ranges::views::reverse;
-        for (auto const [cwi, pwi] :
-             ranges::views::zip(currRange, prevRange)) {
+        for (auto const [cwi, pwi] : ranges::views::zip(currRange, prevRange)) {
           curr[cwi] += prev[pwi];
         }
       }
@@ -149,8 +148,7 @@ auto rankAllWeights(WeightType maxWeight,
                                ranges::views::reverse;
         auto const prevRange =
             ranges::views::iota(weight, maxWeight) | ranges::views::reverse;
-        for (auto const [cwi, pwi] :
-             ranges::views::zip(currRange, prevRange)) {
+        for (auto const [cwi, pwi] : ranges::views::zip(currRange, prevRange)) {
           curr[cwi] += prev[pwi];
         }
       }
@@ -164,40 +162,6 @@ auto rankAllWeights(WeightType maxWeight,
   std::reverse(std::begin(prev), std::end(prev));
 
   return prev;
-}
-// TODO ranges::enumerate useful in lots of this code
-template <std::uint32_t KeyLenBits, typename ScoresType,
-          typename DimensionsType, typename RankType, typename ComparatorFn>
-auto approximateRank(ScoresTable<ScoresType, DimensionsType> const &scores,
-                     Key<KeyLenBits> const &key) -> RankType {
-  ComparatorFn comparator;
-  auto const &dims = scores.dimensions();
-  auto const &subkeys = dims.asSpans();
-
-  auto approximatedRank = RankType{1};
-  for (auto vectorIndex : dims.vectorRange()) {
-    // get the score for the correct subkey
-    BitSpan const subkeyDef = subkeys[vectorIndex];
-    auto const correctSubkeyIndex =
-        key.template subkeyValue<RankType>(subkeyDef);
-    auto const correctSubkeyScore =
-        scores.score(vectorIndex, correctSubkeyIndex);
-
-    // find subkey rank
-    RankType subkeyRank{0};
-    for (auto subkeyIndex : subkeyDef.subkeyRange()) {
-      auto const thisSubkeyScore = scores.score(vectorIndex, subkeyIndex);
-      if (subkeyIndex != correctSubkeyIndex) {
-        if (comparator(thisSubkeyScore, correctSubkeyScore)) {
-          subkeyRank++;
-        }
-      }
-    }
-
-    // Multiply through to get an approximation for the rank
-    approximatedRank *= (subkeyRank + RankType{1});
-  }
-  return approximatedRank;
 }
 
 } /* namespace rankcpp */

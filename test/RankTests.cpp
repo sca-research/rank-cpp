@@ -224,31 +224,4 @@ TEST_CASE("Rank#rank, rank = 0", "[Rank]") {
   }
 }
 
-TEST_CASE("Rank#approximateRank, two vectors, greater", "[Rank]") {
-  using RankType = std::uint64_t;
-  Key<16> const correctKey({0x00, 0x01});
-
-  std::vector<double> vec1Data(256, 5.0);
-  vec1Data[0] = 6.0;
-  vec1Data[1] = 7.0;
-  vec1Data[2] = 8.0; // Subkey rank of 2 (3 when indexed from 1)
-
-  std::vector<double> vec2Data(256, 3.0);
-  vec2Data[0] = 16.0;
-  vec2Data[1] = 7.0;
-  vec2Data[2] = 16.0;
-  vec2Data[4] = 18.0; // Subkey rank of 3 (4 when indexed from 1)
-
-  Dimensions const dims(2, 8);
-  ScoresTable<double> table(dims);
-  table.addScores(BitSpan(0, 8), std::cbegin(vec1Data), std::cend(vec1Data));
-  table.addScores(BitSpan(8, 8), std::cbegin(vec2Data), std::cend(vec2Data));
-
-  RankType const expected(12);
-  auto const actual =
-      approximateRank<16, double, Dimensions, RankType, std::greater<double>>(
-          table, correctKey);
-  CHECK(expected == actual);
-}
-
 } /* namespace rankcpp */
