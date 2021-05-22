@@ -39,7 +39,7 @@ auto rank(WeightType maxWeight,
                                ranges::views::reverse;
         auto const prevRange =
             ranges::views::iota(weight, maxWeight) | ranges::views::reverse;
-        for (auto const &[cwi, pwi] :
+        for (auto const [cwi, pwi] :
              ranges::views::zip(currRange, prevRange)) {
           curr[cwi] += prev[pwi];
         }
@@ -149,7 +149,7 @@ auto rankAllWeights(WeightType maxWeight,
                                ranges::views::reverse;
         auto const prevRange =
             ranges::views::iota(weight, maxWeight) | ranges::views::reverse;
-        for (auto const &[cwi, pwi] :
+        for (auto const [cwi, pwi] :
              ranges::views::zip(currRange, prevRange)) {
           curr[cwi] += prev[pwi];
         }
