@@ -135,9 +135,9 @@ public:
     auto const vectorIndex = found - std::cbegin(subkeys);
     auto const offset =
         dims_.scoresBeforeCount(static_cast<std::size_t>(vectorIndex));
-    auto end = std::begin(scores_);
-    std::advance(first, offset);
-    std::copy(first, last, end);
+    auto output = std::begin(scores_);
+    std::advance(output, offset);
+    std::copy(first, last, output);
   }
 
   // TODO enable if here
