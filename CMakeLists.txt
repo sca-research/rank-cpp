@@ -66,7 +66,10 @@ target_compile_features(rankcpp INTERFACE cxx_std_17)
 target_link_libraries(rankcpp INTERFACE GSL range-v3)
 
 # Test binaries
-add_subdirectory("test")
+option(ENABLE_TESTING "Build unit test binaries" OFF)
+if(ENABLE_TESTING)
+  add_subdirectory("test")
+endif()
 
 # Documentation
 if(ENABLE_DOC)
