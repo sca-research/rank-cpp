@@ -43,11 +43,6 @@ enable_doxygen()
 # enable Sphinx
 include(cmake/FindSphinx.cmake)
 
-# Main rank-cpp library (header-only)
-add_library(rankcpp INTERFACE)
-target_include_directories(rankcpp INTERFACE "${PROJECT_SOURCE_DIR}/include/")
-target_compile_features(rankcpp INTERFACE cxx_std_17)
-
 # GSL (Microsoft guidelines support library)
 FetchContent_Declare(
   GSL
@@ -63,6 +58,12 @@ FetchContent_Declare(
   GIT_TAG        e7746b214f3cfca341a8aa55fbce95b6b8a1c9d1
 )
 FetchContent_MakeAvailable(range-v3)
+
+# Main rank-cpp library (header-only)
+add_library(rankcpp INTERFACE)
+target_include_directories(rankcpp INTERFACE "${PROJECT_SOURCE_DIR}/include/")
+target_compile_features(rankcpp INTERFACE cxx_std_17)
+target_link_libraries(rankcpp INTERFACE GSL range-v3)
 
 # Test binaries
 add_subdirectory("test")
